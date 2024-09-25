@@ -4,7 +4,6 @@
 #include <LiquidCrystal_I2C.h>
 #include "HX711.h"
 
-
 #define DOUT 23
 #define CLK 19
 
@@ -24,7 +23,6 @@ int val;
 float weight;
 float calibration_factor = 100; 
 
-
 HX711 scale;
 
 void setup() {
@@ -34,7 +32,6 @@ void setup() {
   pinMode(BUZZER, OUTPUT);
   Serial.println("Remove all weight from scale");
 
-  
   scale.begin(DOUT, CLK);
   scale.set_scale();
   scale.tare();                             
@@ -47,7 +44,28 @@ void setup() {
 
 void loop() {
   Blynk.run();
-  measureweight();
+  manageFluidReduction();  
+  measureweight();         
+}
+
+void manageFluidReduction() {
+  static unsigned long lastReductionTime = 0;
+  unsigned long currentTime = millis();
+
+  if (currentTime - lastReductionTime >= 30000) { 
+    lastReductionTime = currentTime;
+
+   
+    liter -= 50; 
+    if (liter < 0) {
+      liter = 0; 
+    }
+
+  
+    Serial.print("Reduced IV Bag Volume: ");
+    Serial.print(liter);
+    Serial.println(" mL");
+  }
 }
 
 void measureweight() {
@@ -56,6 +74,7 @@ void measureweight() {
   if (weight < 0) {
     weight = 0.00;
   }
+  
   liter = weight * 1000;
   val = liter;
   val = map(val, 0, 505, 0, 100);
@@ -84,6 +103,8 @@ void measureweight() {
   Serial.println("%");
   Serial.println();
   delay(500);
+  
+  
   if (val <= 90 && val >= 75) {
     Blynk.logEvent("iv_alert", "IV Bottle is 50%");
     digitalWrite(BUZZER, HIGH);
@@ -96,6 +117,8 @@ void measureweight() {
   } else {
     digitalWrite(BUZZER, LOW);
   }
+  
+  
   Blynk.virtualWrite(V0, liter);
   Blynk.virtualWrite(V1, val);
 }

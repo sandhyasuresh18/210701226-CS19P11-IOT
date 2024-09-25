@@ -113,10 +113,15 @@ void measureweight() {
     delay(50);
   } else if (val <= 20) {
     Blynk.logEvent("iv_alert", "IV Bottle is too LOW");
-    digitalWrite(BUZZER, HIGH);
-  } else {
-    digitalWrite(BUZZER, LOW);
-  }
+    
+
+    for (int i = 0; i < 2; i++) { 
+        digitalWrite(BUZZER, HIGH); 
+        delay(100); 
+        digitalWrite(BUZZER, LOW); 
+        delay(100); 
+    }
+}
   
   
   Blynk.virtualWrite(V0, liter);

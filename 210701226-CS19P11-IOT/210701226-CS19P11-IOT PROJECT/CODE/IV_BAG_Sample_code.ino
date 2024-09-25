@@ -1,7 +1,4 @@
-Share
 
-
-You said:
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <BlynkSimpleEsp32.h>

@@ -1,8 +1,13 @@
+Share
+
+
+You said:
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <BlynkSimpleEsp32.h>
 #include <LiquidCrystal_I2C.h>
 #include "HX711.h"
+
 
 #define DOUT 23
 #define CLK 19
@@ -23,6 +28,7 @@ int val;
 float weight;
 float calibration_factor = 100; 
 
+
 HX711 scale;
 
 void setup() {
@@ -32,6 +38,7 @@ void setup() {
   pinMode(BUZZER, OUTPUT);
   Serial.println("Remove all weight from scale");
 
+  
   scale.begin(DOUT, CLK);
   scale.set_scale();
   scale.tare();                             
@@ -44,28 +51,7 @@ void setup() {
 
 void loop() {
   Blynk.run();
-  manageFluidReduction();  
-  measureweight();         
-}
-
-void manageFluidReduction() {
-  static unsigned long lastReductionTime = 0;
-  unsigned long currentTime = millis();
-
-  if (currentTime - lastReductionTime >= 30000) { 
-    lastReductionTime = currentTime;
-
-   
-    liter -= 50; 
-    if (liter < 0) {
-      liter = 0; 
-    }
-
-  
-    Serial.print("Reduced IV Bag Volume: ");
-    Serial.print(liter);
-    Serial.println(" mL");
-  }
+  measureweight();
 }
 
 void measureweight() {
@@ -74,7 +60,6 @@ void measureweight() {
   if (weight < 0) {
     weight = 0.00;
   }
-  
   liter = weight * 1000;
   val = liter;
   val = map(val, 0, 505, 0, 100);
@@ -103,8 +88,6 @@ void measureweight() {
   Serial.println("%");
   Serial.println();
   delay(500);
-  
-  
   if (val <= 90 && val >= 75) {
     Blynk.logEvent("iv_alert", "IV Bottle is 50%");
     digitalWrite(BUZZER, HIGH);
@@ -113,17 +96,10 @@ void measureweight() {
     delay(50);
   } else if (val <= 20) {
     Blynk.logEvent("iv_alert", "IV Bottle is too LOW");
-    
-
-    for (int i = 0; i < 2; i++) { 
-        digitalWrite(BUZZER, HIGH); 
-        delay(100); 
-        digitalWrite(BUZZER, LOW); 
-        delay(100); 
-    }
-}
-  
-  
+    digitalWrite(BUZZER, HIGH);
+  } else {
+    digitalWrite(BUZZER, LOW);
+  }
   Blynk.virtualWrite(V0, liter);
   Blynk.virtualWrite(V1, val);
 }

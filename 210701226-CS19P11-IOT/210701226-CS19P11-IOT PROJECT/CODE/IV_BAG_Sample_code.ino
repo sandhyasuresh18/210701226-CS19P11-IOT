@@ -59,7 +59,7 @@ void measureweight() {
   }
   liter = weight * 1000;
   val = liter;
-  val = map(val, 0, 505, 0, 100);
+  val = map(val, 0, 100, 0, 100);
 
   lcd.clear();
   lcd.setCursor(1, 0);
